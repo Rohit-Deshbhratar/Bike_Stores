@@ -28,6 +28,11 @@ USE BikeStores;
 -- If you have N dimension columns specified in the CUBE, you will have 2^N grouping sets.
 
 --5. ROLLUP
+-- ROLLUP is a subclause of the GROUP BY clause which provides a shorthand for defining multiple grouping sets.
+-- When generating the grouping sets, ROLLUP assumes a hierarchy among the dimension columns and 
+-- only generates grouping sets based on this hierarchy.
+-- The ROLLUP is often used to generate subtotals and totals for reporting purposes.
+-- The ROLLUP is commonly used to calculate the aggregates of hierarchical data such as sales by year > quarter > month.
 ----------------------------------------------------------------------------------------
 --GROUP BY
 --1. SIMPLE EXAMPLE
@@ -288,4 +293,30 @@ FROM
 GROUP BY
 	brand,
 	CUBE(category);
+----------------------------------------------------------------------------------------
+-- ROLLUP
+-- Use "ROLLUP" to calculate the sales amount by brand (subtotal) and both brand and category (total).
+-- NOTE HIERARCHY IS BRAND --> CATEGORY
+SELECT
+	brand, category, SUM(sales) SALES
+FROM
+	[sales].[sales_summary]
+GROUP BY
+	ROLLUP(brand, category);
+
+-- CHANGE ORDER OF ROLLUP i.e. CATEGORY --> BRAND
+SELECT
+	category, brand, SUM(sales) SALES
+FROM
+	[sales].[sales_summary]
+GROUP BY
+	ROLLUP(category, brand);
+
+-- PARTIAL ROLLUP
+SELECT
+	brand, category, SUM(sales) SALES
+FROM
+	[sales].[sales_summary]
+GROUP BY
+	brand, ROLLUP(category);
 ----------------------------------------------------------------------------------------
