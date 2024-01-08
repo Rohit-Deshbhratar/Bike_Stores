@@ -24,6 +24,8 @@ USE BikeStores;
 -- It returns 1 for aggregated or 0 for not aggregated in the result set.
 
 --4. CUBE
+-- The CUBE is a subclause of the GROUP BY clause that allows you to generate multiple grouping sets.
+-- If you have N dimension columns specified in the CUBE, you will have 2^N grouping sets.
 
 --5. ROLLUP
 ----------------------------------------------------------------------------------------
@@ -267,4 +269,23 @@ GROUP BY
     )
 ORDER BY
     brand, category;
+----------------------------------------------------------------------------------------
+-- CUBE
+
+-- BASIC EXAMPLE
+SELECT
+	brand, category, SUM(sales)SALES
+FROM
+	[sales].[sales_summary]
+GROUP BY
+	CUBE(brand, category);
+
+-- PARTIAL CUBE
+SELECT
+	brand, category, SUM(sales)SALES
+FROM
+	[sales].[sales_summary]
+GROUP BY
+	brand,
+	CUBE(category);
 ----------------------------------------------------------------------------------------
