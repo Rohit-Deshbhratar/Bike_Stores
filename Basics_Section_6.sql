@@ -11,6 +11,9 @@ USE BikeStores;
 -- The GROUP BY clause arranges rows into groups and an aggregate function returns the summary for each group.
 
 --2. HAVING
+-- The HAVING clause is often used with the GROUP BY clause to filter groups based on a specified list of conditions. 
+-- Because SQL Server processes the HAVING clause after the GROUP BY clause, 
+-- you cannot refer to the aggregate function specified in the select list by using the column alias.
 
 --3. GROUPING SETS
 
@@ -127,3 +130,61 @@ FROM
 	[sales].[order_items]
 GROUP BY
 	order_id;
+----------------------------------------------------------------------------------------
+
+-- HAVING
+--1. HAVING WITH COUNT() FUNCTION
+-- Find the customers who placed at least two orders per year
+SELECT
+	customer_id, YEAR(order_date) ORDERED_IN, COUNT(order_id) TOTAL_ORDER
+FROM
+	[sales].[orders]
+GROUP BY
+	customer_id, YEAR(order_date)
+HAVING 
+	COUNT(order_id) >= 2
+ORDER BY
+	customer_id;
+
+-- HAVING WITH SUM()
+-- Finds the sales orders whose net values are greater than 20,000
+SELECT
+	order_id,
+	SUM(
+		quantity * list_price * (1 - discount)
+		)NET_VALUE
+FROM	
+	[sales].[order_items]
+GROUP BY
+	order_id
+HAVING
+	SUM(
+		quantity * list_price * (1 - discount)
+		) >= 20000
+ORDER BY
+	NET_VALUE;
+
+-- HAVING WITH MIN(), MAX()
+-- Finds the maximum and minimum list prices in each product category
+SELECT
+	category_id, MAX(list_price)HIGHEST_VALUE, MIN(list_price)LOWEST_VALUE
+FROM
+	[production].[products]
+GROUP BY
+	category_id
+HAVING
+	MAX(list_price) > 400 OR MIN(list_price) < 500;
+
+-- HAVING WITH AVG()
+-- Find product categories whose average list prices are between 500 and 1,000
+SELECT
+	category_id, AVG(list_price)AVG_PRICE
+FROM
+	[production].[products]
+GROUP BY
+	category_id
+HAVING
+	AVG(list_price) BETWEEN 500 AND 1000
+ORDER BY
+	category_id;
+----------------------------------------------------------------------------------------
