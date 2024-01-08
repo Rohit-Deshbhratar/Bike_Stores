@@ -16,6 +16,12 @@ USE BikeStores;
 -- you cannot refer to the aggregate function specified in the select list by using the column alias.
 
 --3. GROUPING SETS
+-- A grouping set is a group of columns by which you group. 
+-- Typically, a single query with an aggregate defines a single grouping set.
+-- The "GROUPING SETS" defines multiple grouping sets in the same query.
+
+-- The GROUPING function indicates whether a specified column in a GROUP BY clause is aggregated or not. 
+-- It returns 1 for aggregated or 0 for not aggregated in the result set.
 
 --4. CUBE
 
@@ -187,4 +193,78 @@ HAVING
 	AVG(list_price) BETWEEN 500 AND 1000
 ORDER BY
 	category_id;
+----------------------------------------------------------------------------------------
+
+--3. GROUPING SETS
+
+-- STEP 1
+-- TO UNDERSTAND "GROUPING SETS" CREATE NEW TABLE [sales].[sales_summary]
+-- FROM [sales].[order_items] BY APPLYING INNER JOINS ON  [production].[products],
+-- [production].[brands] AND [production].[categories].
+SELECT
+    B.brand_name AS brand, C.category_name AS category, P.model_year,
+    round(
+        SUM (
+            quantity * I.list_price * (1 - discount)
+        ),
+        0
+    ) sales INTO [sales].[sales_summary]
+FROM
+    [sales].[order_items] I
+INNER JOIN 
+	[production].[products] P 
+ON 
+	P.product_id = I.product_id
+INNER JOIN 
+	[production].[brands] B 
+ON 
+	B.brand_id = P.brand_id
+INNER JOIN 
+	[production].[categories] C 
+ON 
+	C.category_id = P.category_id
+GROUP BY
+    B.brand_name, C.category_name, P.model_year
+ORDER BY
+    B.brand_name, C.category_name, P.model_year;
+
+-- STEP 2
+-- DISPLAY DATA IN [sales].[sales_summary]
+SELECT * 
+FROM
+	[sales].[sales_summary]
+ORDER BY
+	brand, category, model_year;
+
+-- STEP 3
+SELECT
+	 brand, category, SUM(sales)SALES
+FROM
+	[sales].[sales_summary]
+GROUP BY
+	GROUPING SETS(
+		(brand, category),
+		(brand),
+		(category),
+		()
+	)
+ORDER BY
+	brand, category;
+------------- DONE -------------
+
+-- GROUPING FUNCTION EXAMPLE
+SELECT
+    GROUPING(brand) GROUPING_BRAND, GROUPING(category) GROUPING_CATEGORY, brand, category,
+    SUM (sales) sales
+FROM
+    [sales].[sales_summary]
+GROUP BY
+    GROUPING SETS (
+        (brand, category),
+        (brand),
+        (category),
+        ()
+    )
+ORDER BY
+    brand, category;
 ----------------------------------------------------------------------------------------
